@@ -9,7 +9,7 @@ namespace Product.API.Controllers
         [HttpGet]
         public IActionResult Get() 
         {
-            return Ok(new
+            return Ok(new 
             {
                 service = "Product.API",
                 status = "Healthy",

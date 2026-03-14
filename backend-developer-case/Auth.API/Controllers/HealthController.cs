@@ -13,7 +13,7 @@ namespace Auth.API.Controllers
             { 
                 service = "Auth.API",
                 status = "Healthy",
-                timestamp = DateTime.UtcNow  
+                timestamp = DateTime.UtcNow   
             });
         }
     }

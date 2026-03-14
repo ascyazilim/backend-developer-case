@@ -8,7 +8,7 @@ namespace Shared.Common.Results
 {
     public class Result<T> : Result
     {
-        public T? Data { get; private set; }
+        public T? Data { get; private set; } 
 
         public static Result<T> Ok(T data, string message = "Success")
             => new()

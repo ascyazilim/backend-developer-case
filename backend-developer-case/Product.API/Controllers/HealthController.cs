@@ -7,7 +7,7 @@ namespace Product.API.Controllers
     public class HealthController : ControllerBase
     {
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get() 
         {
             return Ok(new
             {

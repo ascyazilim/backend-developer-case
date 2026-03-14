@@ -13,7 +13,7 @@ namespace Log.API.Controllers
             {
                 service = "Log.API",
                 status = "Healthy",
-                timestamp = DateTime.UtcNow
+                timestamp = DateTime.UtcNow 
             });
         }
     }

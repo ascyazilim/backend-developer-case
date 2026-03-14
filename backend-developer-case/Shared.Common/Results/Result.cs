@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Shared.Common.Results
 {
-    public class Result
+    public class Result 
     {
         public bool Success { get; protected set; }
         public string Message { get; protected set; } = string.Empty;

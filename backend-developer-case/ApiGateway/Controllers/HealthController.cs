@@ -13,7 +13,7 @@ namespace ApiGateway.Controllers
             {
                 service = "ApiGateway",
                 status = "Healthy",
-                timestamp = DateTime.UtcNow
+                timestamp = DateTime.UtcNow 
             });
         }
     }

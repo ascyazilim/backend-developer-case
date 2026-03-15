@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Product.Application\Product.Application.csproj" />
     <ProjectReference Include="..\Product.Domain\Product.Domain.csproj" />
     <ProjectReference Include="..\Shared.Common\Shared.Common.csproj" />
     <ProjectReference Include="..\Shared.Contracts\Shared.Contracts.csproj" />
@@ -18,10 +17,10 @@
     <Folder Include="Messaging\" />
     <Folder Include="Configurations\" />
     <Folder Include="Reposiitories\" />
-    <Folder Include="Persistance\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.25" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.25">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -1,36 +1,49 @@
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 
-namespace Log.API
+var builder = WebApplication.CreateBuilder(args);
+
+// 1. Serilog Konfigürasyonu (Serilog.Log kullanarak namespace çakışmasını önlüyoruz)
+Serilog.Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("System", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(new CompactJsonFormatter())
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-            // Add services to the container.
+app.UseSerilogRequestLogging();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+app.UseAuthorization();
+app.MapControllers();
 
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
-
-            app.MapControllers();
-
-            app.Run();
-        }
-    }
+try
+{
+    // INFO seviyesi log
+    Serilog.Log.Information("Log.API Servisi başlatılıyor...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    // CRITICAL seviyesi log
+    Serilog.Log.Fatal(ex, "Uygulama beklenmedik bir şekilde çöktü!");
+}
+finally
+{
+    Serilog.Log.CloseAndFlush();
 }

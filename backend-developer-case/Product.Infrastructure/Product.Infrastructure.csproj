@@ -16,7 +16,6 @@
     <Folder Include="Caching\" />
     <Folder Include="Messaging\" />
     <Folder Include="Configurations\" />
-    <Folder Include="Reposiitories\" />
   </ItemGroup>
 
   <ItemGroup>

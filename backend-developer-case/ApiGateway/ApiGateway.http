@@ -1,6 +1,8 @@
-@ApiGateway_HostAddress = http://localhost:5137
+### YARP Gateway Üzerinden Login Testi
+POST https://localhost:7000/auth-service/api/auth/login
+Content-Type: application/json
 
-GET {{ApiGateway_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
+{
+  "email": "test@kullanici.com",
+  "password": "Password123!"
+}

@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Product.Application.Services;
-using Product.Domain.Services;
 
 namespace Product.Application
 {
@@ -8,7 +6,8 @@ namespace Product.Application
     {
         public static IServiceCollection AddProductApplication(this IServiceCollection services)
         {
-            services.AddScoped<IProductService, ProductService>();
+            // Eski Service kayıtlarını sildik. 
+            // CQRS (MediatR) kaydını zaten Program.cs içerisinde doğrudan yaptık.
             return services;
         }
     }

@@ -6,5 +6,7 @@ namespace Product.Domain.Repositories
     {
         Task AddAsync(ProductEntity product);
         Task SaveChangesAsync();
+
+        Task<IEnumerable<ProductEntity>> GetAllAsync();
     }
 }

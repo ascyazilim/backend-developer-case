@@ -1,4 +1,5 @@
-﻿using Product.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using Product.Domain.Entities;
 using Product.Domain.Repositories;
 using Product.Infrastructure.Persistence.Context;
 
@@ -24,6 +25,12 @@ namespace Product.Infrastructure.Persistence.Repositories
         {
             // Değişiklikleri asenkron olarak kaydediyoruz
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<ProductEntity>> GetAllAsync()
+        {
+            // Veritabanındaki tüm ürünleri liste olarak getiriyoruz
+            return await _context.Products.ToListAsync();
         }
     }
 }

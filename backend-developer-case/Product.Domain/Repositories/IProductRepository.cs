@@ -8,5 +8,6 @@ namespace Product.Domain.Repositories
         Task SaveChangesAsync();
 
         Task<IEnumerable<ProductEntity>> GetAllAsync();
+        Task<ProductEntity?> GetByIdAsync(Guid id);
     }
 }

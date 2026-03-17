@@ -32,5 +32,11 @@ namespace Product.Infrastructure.Persistence.Repositories
             // Veritabanındaki tüm ürünleri liste olarak getiriyoruz
             return await _context.Products.ToListAsync();
         }
+
+        public async Task<ProductEntity?> GetByIdAsync(Guid id)
+        {
+            // Verilen Id'ye sahip ürünü veritabanında arar, bulamazsa null döner
+            return await _context.Products.FindAsync(id);
+        }
     }
 }

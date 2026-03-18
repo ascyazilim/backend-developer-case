@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Product.Application.Features.Products.Commands.CreateProduct;
 using Product.Application.Features.Products.Queries.GetAllProducts;
 using Product.Application.Features.Products.Queries.GetProductById;
@@ -18,7 +19,10 @@ namespace Product.API.Controllers
             _mediator = mediator;
         }
 
+
+
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
         {
             // İsteği alıyoruz ve Send metodu ile MediatR'a fırlatıyoruz.

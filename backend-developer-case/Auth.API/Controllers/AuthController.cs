@@ -1,10 +1,9 @@
-﻿using Auth.Application.Abstractions;
-using Auth.Application.DTOs;
-using Auth.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
+﻿using Auth.API.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace Auth.API.Controllers
 {
@@ -12,73 +11,59 @@ namespace Auth.API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly ITokenService _tokenService;
+        private readonly IConfiguration _configuration;
 
-        // Dependency Injection ile gerekli servisleri alıyoruz
-        public AuthController(UserManager<AppUser> userManager, ITokenService tokenService)
+        // appsettings.json içindeki gizli anahtarları okumak için IConfiguration kullanıyoruz
+        public AuthController(IConfiguration configuration)
         {
-            _userManager = userManager;
-            _tokenService = tokenService;
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            // Kullanıcı var mı kontrolü
-            var userExists = await _userManager.FindByEmailAsync(request.Email);
-            if (userExists != null)
-                return BadRequest("Bu e-posta adresi zaten kullanımda.");
-
-            AppUser user = new()
-            {
-                Email = request.Email,
-                UserName = request.Email, // Identity username'i zorunlu tutar, email'i username yapıyoruz
-                FirstName = request.FirstName,
-                LastName = request.LastName
-            };
-
-            // Identity'nin kendi metoduyla şifreyi hash'leyerek kaydediyoruz
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, result.Errors);
-
-            return Ok(new { Status = "Success", Message = "Kullanıcı başarıyla oluşturuldu." });
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public IActionResult Login([FromBody] LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-
-            // Kullanıcı var mı ve şifre doğru mu?
-            if (user != null && await _userManager.CheckPasswordAsync(user, request.Password))
+            // Kullanıcı adı "admin", şifre "12345" ise kabul et.
+            if (loginDto.Username == "admin" && loginDto.Password == "12345")
             {
-                // Token içine gömülecek kimlik bilgileri (Claims)
-                var authClaims = new List<Claim>
+                var token = GenerateJwtToken(loginDto.Username);
+
+                return Ok(new
                 {
-                    new Claim(ClaimTypes.Name, user.UserName!),
-                    new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Token'a özel benzersiz ID
-                };
-
-                // TokenService üzerinden token'ları üretiyoruz
-                var accessToken = _tokenService.GenerateAccessToken(authClaims);
-                var refreshToken = _tokenService.GenerateRefreshToken();
-
-                // Refresh token mekanizmasını yönetmek için veritabanına kaydediyoruz
-                user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-
-                await _userManager.UpdateAsync(user);
-
-                return Ok(new TokenResponse(
-                    AccessToken: accessToken,
-                    RefreshToken: refreshToken,
-                    Expiration: DateTime.UtcNow.AddMinutes(60)
-                ));
+                    Status = "Success",
+                    Token = token,
+                    Message = "Giriş başarılı, token üretildi!"
+                });
             }
-            return Unauthorized("Geçersiz e-posta veya şifre.");
+
+            // Bilgiler yanlışsa 401 Unauthorized (Yetkisiz) dön.
+            return Unauthorized(new { Message = "Kullanıcı adı veya şifre hatalı!" });
+        }
+
+        // Token üretim mantığı (VIP Kartı Basma Makinesi)
+        private string GenerateJwtToken(string username)
+        {
+            var jwtSettings = _configuration.GetSection("JwtSettings");
+            var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]!);
+
+            // Token'ın içine koyacağımız bilgiler (Örn: Kim bu adam? Rolü ne?)
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Role, "Admin"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            // Token'ı oluşturma ve şifreleme işlemi
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1), // 1 saat geçerli
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(secretKey), SecurityAlgorithms.HmacSha256)
+            );
+
+            // Token'ı şifreli bir metin (string) olarak geri dön
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

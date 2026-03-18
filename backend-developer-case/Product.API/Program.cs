@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Product.Application;
 using Product.Application.Features.Products.Commands.CreateProduct;
@@ -5,6 +6,7 @@ using Product.Domain.Repositories;
 using Product.Infrastructure;
 using Product.Infrastructure.Persistence.Context;
 using Product.Infrastructure.Persistence.Repositories;
+using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +23,20 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 // MediatR bu katmandaki tüm Command, Query ve Handler'ları otomatik olarak bulup sisteme dahil edecek.
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly));
 
-// ... (builder.Services.AddControllers(); satırı ve devamı)
+
+
+// RabbitMQ ve MassTransit Kaydı
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

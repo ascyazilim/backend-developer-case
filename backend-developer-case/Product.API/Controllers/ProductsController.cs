@@ -1,7 +1,8 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Product.Application.Features.Products.Commands.CreateProduct;
+using Product.Application.Features.Products.Commands.UpdateProduct;
 using Product.Application.Features.Products.Queries.GetAllProducts;
 using Product.Application.Features.Products.Queries.GetProductById;
 
@@ -62,6 +63,26 @@ namespace Product.API.Controllers
 
             // Varsa 200 OK ile ürünü dön
             return Ok(product);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize] // Sadece yetkililer güncelleyebilir
+        public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] UpdateProductCommand command)
+        {
+            // URL'deki Guid ile gövdedeki Guid eşleşiyor mu?
+            if (id != command.Id)
+            {
+                return BadRequest(new { Message = "URL'deki ID ile gönderilen ID uyuşmuyor!" });
+            }
+
+            var result = await _mediator.Send(command);
+
+            if (!result)
+            {
+                return NotFound(new { Message = "Güncellenecek ürün bulunamadı!" });
+            }
+
+            return Ok(new { Message = "Ürün başarıyla güncellendi!" });
         }
     }
 }

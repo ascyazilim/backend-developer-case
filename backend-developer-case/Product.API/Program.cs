@@ -10,9 +10,20 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. SERILOG YAPILANDIRMASI (Structured JSON Logging & Centralized Seq)
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+        .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(new Serilog.Formatting.Compact.CompactJsonFormatter()) // Konsola JSON yazdır
+        .WriteTo.Seq("http://localhost:5341");// Logları merkezi Seq sunucusuna fırlat!
+});
 
 // 1. Veritabanı Bağlantısı (DbContext) Ayarı
 builder.Services.AddDbContext<ProductDbContext>(options =>
@@ -102,6 +113,8 @@ builder.Services.AddSwaggerGen(c =>
 
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging(); // Gelen istekleri (GET, POST vs.) profesyonelce loglar
 
 if (app.Environment.IsDevelopment())
 {

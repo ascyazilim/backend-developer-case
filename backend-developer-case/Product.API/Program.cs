@@ -45,6 +45,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Redis Caching Entegrasyonu
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "ProductCatalog_"; // Redis'te anahtarların başına bu ismi ekler (karışıklığı önler)
+});
+
 // 1. JWT Doğrulama Ayarları
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["Secret"]!);

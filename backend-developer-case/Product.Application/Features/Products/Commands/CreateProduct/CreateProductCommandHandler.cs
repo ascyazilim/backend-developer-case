@@ -3,6 +3,7 @@ using MediatR;
 using Product.Domain.Entities;
 using Product.Domain.Repositories;
 using Shared.Contracts.Events; // Event sınıfımızın olduğu namespace
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Product.Application.Features.Products.Commands.CreateProduct
 {
@@ -10,11 +11,13 @@ namespace Product.Application.Features.Products.Commands.CreateProduct
     {
         private readonly IProductRepository _repository;
         private readonly IPublishEndpoint _publishEndpoint; // MassTransit arayüzü
+        private readonly IDistributedCache _cache;
 
-        public CreateProductCommandHandler(IProductRepository repository, IPublishEndpoint publishEndpoint)
+        public CreateProductCommandHandler(IProductRepository repository, IPublishEndpoint publishEndpoint, IDistributedCache cache)
         {
             _repository = repository;
             _publishEndpoint = publishEndpoint;
+            _cache = cache;
         }
 
         public async Task<Guid> Handle(CreateProductCommand request, CancellationToken cancellationToken)
@@ -39,6 +42,8 @@ namespace Product.Application.Features.Products.Commands.CreateProduct
                 Price = newProduct.Price,
                 CreatedDate = newProduct.CreatedDate
             }, cancellationToken);
+
+            await _cache.RemoveAsync("all_products_list", cancellationToken);
 
             return newProduct.Id;
         }

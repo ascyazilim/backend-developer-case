@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Product.Domain.Repositories;
 
 namespace Product.Application.Features.Products.Commands.UpdateProduct
@@ -6,10 +7,12 @@ namespace Product.Application.Features.Products.Commands.UpdateProduct
     public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, bool>
     {
         private readonly IProductRepository _productRepository;
+        private readonly IDistributedCache _cache;
 
-        public UpdateProductCommandHandler(IProductRepository productRepository)
+        public UpdateProductCommandHandler(IProductRepository productRepository, IDistributedCache cache)
         {
             _productRepository = productRepository;
+            _cache = cache;
         }
 
         public async Task<bool> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
@@ -29,6 +32,8 @@ namespace Product.Application.Features.Products.Commands.UpdateProduct
 
             // 3. EF Core değişikliği fark edecek, sadece kaydetmemiz yeterli!
             await _productRepository.SaveChangesAsync();
+
+            await _cache.RemoveAsync("all_products_list", cancellationToken);
 
             return true;
         }

@@ -131,4 +131,12 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
+// --- DOCKER İÇİN OTOMATİK VERİTABANI OLUŞTURMA ---
+using (var scope = app.Services.CreateScope())
+{
+    // Kendi Context adın neyse (örn: ProductDbContext veya ApplicationDbContext) onu yaz
+    var dbContext = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.Run();

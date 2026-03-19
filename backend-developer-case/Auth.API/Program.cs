@@ -68,4 +68,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// --- DOCKER İÇİN OTOMATİK VERİTABANI OLUŞTURMA ---
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    dbContext.Database.Migrate(); // Veritabanı yoksa oluşturur ve tabloları kurar
+}
+
 app.Run();

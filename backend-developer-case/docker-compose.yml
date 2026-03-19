@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. ALTYAPI (INFRASTRUCTURE) SERVİSLERİ
+  # ==========================================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=ProjeSifresi123!
+    ports:
+      - "1433:1433"
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  seq:
+    image: datalust/seq:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=Admin12345!
+    ports:
+      - "5341:80"
+
+  # ==========================================
+  # 2. BİZİM MİKROSERVİSLERİMİZ
+  # ==========================================
+  auth.api:
+    build:
+      context: .
+      dockerfile: Auth.API/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__AuthDb=Server=sqlserver;Database=CaseStudy_AuthDb;User Id=sa;Password=ProjeSifresi123!;TrustServerCertificate=True;
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5001:8080" # 🚀 Dışarıdan 5001 portuyla Auth Swagger'ına gireceğiz
+    depends_on:
+      - sqlserver
+
+  product.api:
+    build:
+      context: .
+      dockerfile: Product.API/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__ProductDb=Server=sqlserver;Database=CaseStudy_ProductDb;User Id=sa;Password=ProjeSifresi123!;TrustServerCertificate=True;
+      - RedisConfiguration=redis:6379
+      - RabbitMQConfiguration=amqp://guest:guest@rabbitmq:5672
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5002:8080" # 🚀 Dışarıdan 5002 portuyla Product Swagger'ına gireceğiz
+    depends_on:
+      - sqlserver
+      - redis
+      - rabbitmq
+
+  log.api:
+    build:
+      context: .
+      dockerfile: Log.API/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDbSettings__ConnectionString=mongodb://mongodb:27017
+      - RabbitMQConfiguration=amqp://guest:guest@rabbitmq:5672
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5003:8080" # 🚀 Dışarıdan 5003 portuyla Log Swagger'ına gireceğiz
+    depends_on:
+      - mongodb
+      - rabbitmq
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "5000:8080" 
+    depends_on:
+      - auth.api
+      - product.api

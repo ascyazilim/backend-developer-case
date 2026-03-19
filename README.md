@@ -27,7 +27,7 @@ Bu proje, modern .NET teknolojileri, SOLID prensipleri ve 12 Faktör Uygulama me
 Proje bağımlılıkları ve altyapılarıyla birlikte tamamen Dockerize edilmiştir. Bilgisayarınızda sadece **Docker Desktop** kurulu olması yeterlidir.
 
 1. Depoyu bilgisayarınıza klonlayın:
-`git clone [GITHUB_LINKINIZI_BURAYA_YAZIN]`
+`git clone [https://github.com/ascyazilim/backend-developer-case]`
 
 2. Projenin ana dizinine (docker-compose.yml dosyasının bulunduğu yer) gidin:
 `cd backend-developer-case`

@@ -1,7 +1,5 @@
-using Auth.Application.Abstractions;
-using Auth.Domain.Entities;
-using Auth.Infrastructure.Persistence;
-using Auth.Infrastructure.Services;
+using Auth.API.Data; // Kendi Data klasörünün yolu
+using Auth.API.Models; // Kendi Models klasörünün yolu
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,16 +8,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Veritabanı Bağlantısı (DbContext) Ayarı
+// 1. Veritabanı Bağlantısını (DbContext) Kaydetme 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthSqlConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDb")));
 
-// 2. Microsoft Identity Ayarları
-builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+// 2. Microsoft Identity (Kullanıcı ve Rol Yönetimi) Ayarları 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Parola kurallarını esnetebilir veya sıkılaştırabiliriz
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 6;
+    // Test için şifre kurallarını esnettik
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 3;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
@@ -51,8 +49,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Token Service Dependency Injection
-builder.Services.AddScoped<ITokenService, TokenService>();
+// 4. Standart Servisler
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -65,7 +62,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// 4. Kimlik Doğrulama ve Yetkilendirme Middleware'leri (Sırası çok önemlidir!)
+// 5. Kimlik Doğrulama ve Yetkilendirme Middleware'leri (Sırası kusursuz!)
 app.UseAuthentication();
 app.UseAuthorization();
 

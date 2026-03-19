@@ -23,7 +23,7 @@ namespace Product.API.Controllers
 
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = "Admin")] // DİKKAT: Sadece Admin rolüne sahip olanlar girebilir!
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
         {
             // İsteği alıyoruz ve Send metodu ile MediatR'a fırlatıyoruz.
@@ -39,6 +39,7 @@ namespace Product.API.Controllers
         }
 
         [HttpGet]
+        [Authorize]// Sadece token'ı olan (giriş yapmış) herkes görebilir
         public async Task<IActionResult> GetAllProducts()
         {
             // Sadece boş bir Query nesnesi gönderiyoruz, MediatR gidip Handler'ı bulacak
@@ -49,6 +50,7 @@ namespace Product.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]// Sadece token'ı olan (giriş yapmış) herkes görebilir
         public async Task<IActionResult> GetProductById(Guid id)
         {
             // İsteği oluştur ve içine gelen Id'yi koy
@@ -66,7 +68,7 @@ namespace Product.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize] // Sadece yetkililer güncelleyebilir
+        [Authorize(Roles = "Admin")] // DİKKAT: Sadece Admin rolüne sahip olanlar girebilir!
         public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] UpdateProductCommand command)
         {
             // URL'deki Guid ile gövdedeki Guid eşleşiyor mu?
